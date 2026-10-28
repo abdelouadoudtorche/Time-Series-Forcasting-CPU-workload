@@ -2,3 +2,12 @@
 .venv/
 .pytest_cache/
 __pycache__/
+# Challenge data (distributed as a release asset, never commit)
+challenge_data/*
+!challenge_data/README.md
+
+# Notebooks, env files, outputs
+.ipynb_checkpoints/
+.env
+*.env
+.DS_Store
