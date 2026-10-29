@@ -143,6 +143,7 @@ For `active_vm_count`, plan for 10,000 VMs; no scaling decision arises in this w
 - 4 overlapping folds: margins (especially the 95% one) and model rankings are rough. Alpha for SES was chosen on the same folds it is scored on, which is slightly optimistic.
 - Persistence cannot anticipate mean reversion or level shifts such as the hour 4-5 plateau.
 - A peak-risk trigger could not be validated; segment-level and VM-level analysis was not done.
+  
 **Future work**
 
 - **Longer traces:** days or weeks of data would make daily and weekly seasonality learnable, and a learned or seasonal model may then beat persistence.
