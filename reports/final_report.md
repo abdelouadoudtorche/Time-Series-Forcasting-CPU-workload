@@ -143,4 +143,9 @@ For `active_vm_count`, plan for 10,000 VMs; no scaling decision arises in this w
 - 4 overlapping folds: margins (especially the 95% one) and model rankings are rough. Alpha for SES was chosen on the same folds it is scored on, which is slightly optimistic.
 - Persistence cannot anticipate mean reversion or level shifts such as the hour 4-5 plateau.
 - A peak-risk trigger could not be validated; segment-level and VM-level analysis was not done.
-- Future work: longer traces, segment forecasts (by VM category and core bucket), quantile or conformal prediction intervals, and VM-level peak-risk modelling.
+**Future work**
+
+- **Longer traces:** days or weeks of data would make daily and weekly seasonality learnable, and a learned or seasonal model may then beat persistence.
+- **Segment forecasts:** forecast by VM category and core bucket instead of one blended series, since groups may behave differently. Segment labels come from the source metadata and would need a check that they do not leak future information.
+- **Prediction intervals:** our margin is an empirical 90th percentile of validation errors, a simple relative of quantile and conformal methods. The 90% is an observed hit rate on past folds, not a guarantee.
+- **VM-level peak-risk modelling:** the aggregate is an average over 10,000 VMs, so one VM spiking barely moves it. As an illustration (not data), 10 VMs jumping by 90 points would shift the average by only 0.09 points, below our typical error of about 0.2. The raw data shows individual VMs do spike: the mean of `max_cpu` is 18.3% and the largest value is 99.7%, while the aggregate varies by under 1 point. A next step would be a classifier that estimates, per VM, the probability of exceeding a CPU threshold within a time window, using only past readings as features and the same time-ordered validation. Because spikes are rare, it would be judged with precision and recall rather than MAE. Whole-trace metadata statistics (`avg_cpu`, `max_cpu`, `p95_max_cpu`) must not be used as features, because they include the future. We did not test any of this.
