@@ -120,6 +120,22 @@ Forecast for the holdout: persistence, 9.16% mean CPU, 10,000 VMs, flat over all
 **Trade-off:** a smaller margin saves idle capacity but exposes more cases to overload (under-provisioning: slowdowns, outages); a larger margin protects against surges but pays for unused capacity (over-provisioning). In validation the forecast under-shot in 32% of cases, so the margin matters.
 
 For `active_vm_count`, plan for 10,000 VMs; no scaling decision arises in this window. Because the aggregate averages 10,000 VMs, margins are small in absolute terms; real headroom decisions should also consider individual-VM peaks.
+### Operational use: refreshing the forecast and monitoring it
+
+**One-shot versus live use.** The challenge asks for a single forecast: from the last training timestamp, all 24 future steps are predicted at once, with no new measurements arriving in between. Persistence therefore returns one flat value. In live operation the forecast would not stay flat. Each time a new five-minute measurement arrives, the forecast is recomputed from that **latest real measurement**, never from a previous forecast. A forecast that turns out wrong is replaced at the next observation, and errors do not accumulate.
+
+**This matches how it was validated.** In rolling-origin validation, each fold fits only on real data up to its origin (rows 50, 62, 74, 86) and forecasts the next 24 steps flat. Moving to the next origin resets the forecast to the real value observed there, which is the same behaviour as live refreshing.
+
+**The weakness is inside the 2-hour window.** Within a single flat forecast, a level shift is not seen until the next real measurement arrives. This is consistent with the validation error being lower in the first half hour (MAE 0.150 for steps 1 to 6) than later (0.279 and 0.219 for steps 13 to 18 and 19 to 24), although four overlapping folds are too few to treat the horizon pattern as firm.
+
+**Recommended safeguards.**
+
+| Safeguard | Action |
+|---|---|
+| Refresh every 5 minutes | Recompute the forecast from the newest measurement; plan only the next 2 hours from it |
+| Monitor realised error | Track the recent MAE against the validation level of about 0.2 points. If it stays clearly above that level, investigate before trusting the margin. (This monitoring threshold is a suggestion and was not validated.) |
+| Re-validate as history grows | Repeat the same rolling-origin comparison when more data is available; with multi-day history a seasonal or learned model may beat persistence |
+| Keep the safety margin | The +0.30 point margin absorbs normal misses between refreshes |
 
 ## 9. Limitations and future work
 
